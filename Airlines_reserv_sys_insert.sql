@@ -11,7 +11,7 @@ INTO AIRPORT VALUES
 ( 'LAX' , 'Los Angeles International Airport', '1 WorldWay','Los Angels','CA','USA',90045);
 
 
----
+
 
 INSERT INTO AIRLINE_COMPANY VALUES
 ( 'AA' , 'American Airlines'),
@@ -20,7 +20,7 @@ INSERT INTO AIRLINE_COMPANY VALUES
 ( 'JET' , 'Jet Airways'),
 ( 'SJ' , 'Spice Jet');
 
----
+
 
 INSERT INTO AIRPLANE VALUES
 ( 'AA751' , 40, 'AA' ),
@@ -29,7 +29,7 @@ INSERT INTO AIRPLANE VALUES
 ( 'JET785' , 60, 'JET' ),
 ( 'BA747' , 40, 'BA' );
 
---
+
 INSERT INTO PLANE_PORT_ACCESS VALUES
 ( 'DFW','AA751' ),
 ( 'RDU','AA751' ),
@@ -37,7 +37,7 @@ INSERT INTO PLANE_PORT_ACCESS VALUES
 ( 'DFW','AA851' ),
 ( 'CLT','AA851' );
 
----
+
 
 INSERT INTO SEAT VALUES
 ( 'AA751','A23','TRUE','WINDOW','ECONOMIC' ),
@@ -46,7 +46,7 @@ INSERT INTO SEAT VALUES
 ( 'AA851' ,'A23','TRUE','WINDOW','ECONOMIC' ),
 ( 'AA851' ,'A24','TRUE','WINDOW','ECONOMIC' );
 
---
+
 
 INSERT INTO END_USER VALUES
 ('kunal.jagdish@gmail.com','Kunal','Arora',4694529483,'NORMAL' ),
@@ -55,7 +55,7 @@ INSERT INTO END_USER VALUES
 ('indervirsingh@gmail.com' ,'Indervir','Singh',4694528585,'NORMAL' ),
 ( 'bala@yahoo.com' ,'Bala','Yadav',4694529595,'AGENT' );
 
---
+
 
 INSERT INTO FLIGHT_TRIP VALUES
 ('kunish17dec',1,'RDU',timestamp('2014/12/27 12:00:00'),'DFW',timestamp('2014/12/26 12:00:00'),'kunal.jagdish@gmail.com' ),
@@ -64,7 +64,7 @@ INSERT INTO FLIGHT_TRIP VALUES
 ('shoaga17dec',1,'RDU',timestamp('2014/12/27 12:00:00'),'DFW',timestamp('2014/12/26 12:00:00'),'shobhit@gmail.com' ),
 ('bala17dec',1,'DFW',timestamp('2014/12/27 12:00:00'),'LAX',timestamp('2014/12/26 12:00:00'),'bala@yahoo.com' );
 
---
+
 
 INSERT INTO FARE VALUES
 ( 'kunish17dec',176,200,'$',10,10 ),
@@ -73,7 +73,7 @@ INSERT INTO FARE VALUES
 ( 'shoaga17dec',176,200,'$',10,10 ),
 ( 'bala17dec',176,200,'$',10,10 );
 
---
+
 
 INSERT INTO TRAVELLER VALUES
 (10000001,4567891231,'Kunal','Arora' ),
@@ -82,16 +82,17 @@ INSERT INTO TRAVELLER VALUES
 (10000004,4567891278,'Shobhi','Agrawal'),
 (10000005,4567891214,'Nitish','Salwan' );
 
---
+
 
 INSERT TRAVELLER_TICKET VALUES
-( 'kunish17dec',2,'A23','AA751' ),
-( 'kuniaa741',6,'A24','AA751' ),
-( 'inder17dec',3,'A25','AA751' ),
-( 'shoaga17dec',4,'A23','AA851' ),
-( 'bala17dec',5,'A24','AA851' );
+( 'kunish17dec',2,'A23','AA751',10000001 ),
+( 'kuniaa741',6,'A24','AA751',10000002 ),
+( 'inder17dec',3,'A25','AA751',10000003 ),
+( 'shoaga17dec',4,'A23','AA851',10000004 ),
+( 'bala17dec',5,'A24','AA851',10000005 );
 
---
+
+
 
 INSERT INTO Airplane_Routes_Schedule VALUES
 ('AX7458',600,200,'AA751','RDU',timestamp('2014/12/27 12:00:00'),'DFW',timestamp('2014/12/26 12:00:00') ),
@@ -100,7 +101,7 @@ INSERT INTO Airplane_Routes_Schedule VALUES
 ( 'AX7461',600,200,'AA751','RDU',timestamp('2014/12/27 12:00:00'),'CLT',timestamp('2014/12/26 12:00:00') ),
 ( 'AX7462',600,200,'AA751','DFW',timestamp('2014/12/27 12:00:00'),'CLT',timestamp('2014/12/26 12:00:00') );
 
---
+
 
 INSERT INTO Airplane_Flight_Trips VALUES
 ( 'AX7458','kunish17dec' ),
