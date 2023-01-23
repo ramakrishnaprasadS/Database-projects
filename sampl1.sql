@@ -77,79 +77,81 @@ select * from Airport;
 
 CREATE TABLE Airlines
 (
-    airlines_id INT(5),
-    airlines_name VARCHAR(20) NOT NULL
+    airlines_id char(5),
+    airlines_name VARCHAR(25) NOT NULL
 );
 
-ALTER TABLE Airlines ADD CONSTRAINT `PK_Airlines` PRIMARY KEY(airlines_id);
+ALTER TABLE Airlines ADD CONSTRAINT `PK_Airlines_id` PRIMARY KEY(airlines_id);
 
 ----------------------------------------------------------------
 
 CREATE TABLE Routes
 (
-    route_id INT(5),
+    route_id CHAR(6),
     origin_airport_code CHAR(3) NOT NULL,
-    dest_airport_code CHAR(3) NOT NULL
-    
+    dest_airport_code CHAR(3) NOT NULL,
+    ditance_km   BIGINT UNSIGNED NOT NULL
 );
 ALTER TABLE Routes ADD CONSTRAINT `PK_Routes` PRIMARY KEY(route_id);
 ALTER TABLE Routes ADD CONSTRAINT `FK_Routes_Airport_origin` FOREIGN KEY(origin_airport_code) REFERENCES Airport(airport_code) ;
 ALTER TABLE Routes ADD CONSTRAINT `FK_Routes_Airport_dest` FOREIGN KEY(dest_airport_code) REFERENCES Airport(airport_code) ;
 
+show create table routes;
+
+
 ----------------------------------------------
 CREATE TABLE Schedule
 (
     schedule_id INT(5),
-    route_id INT(5),
-    Airlines_id INT(5),
     onboarding_time_gmt TIMESTAMP ,
     offboarding_time_gmt TIMESTAMP
-
 );
 
-ALTER TABLE Schedule ADD CONSTRAINT `PK_Schedule` PRIMARY KEY(schedule_id);
-ALTER TABLE Schedule ADD CONSTRAINT `FK_Schedule_Routes` FOREIGN KEY(route_id) REFERENCES Routes(route_id) ;
+ALTER TABLE Schedule ADD CONSTRAINT `PK_Schedule_id` PRIMARY KEY(schedule_id);
 
-ALTER TABLE Schedule ADD CONSTRAINT `FK_Schedule_Airlines` FOREIGN KEY(airlines_id) REFERENCES Airlines(airlines_id) ;
 
 ----------------------------------------------------------------
 
-CREATE TABLE Aircraft
+CREATE TABLE Airplane
 (
-    aircraft_id INT(5),
-    aircraft_name VARCHAR(20) NOT NULL,
-    airlines_id INT(5)
-
+    airplane_id CHAR(10),
+    airlines_id CHAR(5)
 );
 
-ALTER TABLE Aircraft ADD CONSTRAINT `PK_Aircraft` PRIMARY KEY(aircraft_id);
-ALTER TABLE Aircraft ADD CONSTRAINT `FK_Aircraft_Airlines` FOREIGN KEY(airlines_id) REFERENCES Airlines(airlines_id);
+ALTER TABLE Airplane ADD CONSTRAINT `PK_Airplane_id` PRIMARY KEY(airplane_id);
+ALTER TABLE Airplane ADD CONSTRAINT `FK_Airplane_Airlines` FOREIGN KEY(airlines_id) REFERENCES Airlines(airlines_id);
 
 -----------------------------------------------------------
 
 CREATE TABLE Flight
 (
-    flight_id INT(5),
-    aircraft_id INT(5),
+    flight_id INT(10) UNSIGNED,
+    airplane_id CHAR(10),
+    route_id CHAR(6),
     schedule_id INT(5)
 );
-ALTER TABLE Flight ADD CONSTRAINT `PK_Flight` PRIMARY KEY(flight_id);
-ALTER TABLE Flight ADD CONSTRAINT `FK_Flight_Aircraft` FOREIGN KEY(aircraft_id) REFERENCES Aircraft(Aircraft_id);
-ALTER TABLE Flight ADD CONSTRAINT `FK_Flight_Schedule` FOREIGN KEY(schedule_id) REFERENCES Schedule(schedule_id);
+ALTER TABLE Flight ADD CONSTRAINT `PK_Flight_id` PRIMARY KEY(flight_id);
+ALTER TABLE Flight ADD CONSTRAINT `FK_Flight_Airplane_id` FOREIGN KEY(airplane_id) REFERENCES Airplane(airplane_id);
+ALTER TABLE Flight ADD CONSTRAINT `FK_Flight_Schedule_id` FOREIGN KEY(schedule_id) REFERENCES Schedule(schedule_id);
+ALTER TABLE Flight ADD CONSTRAINT `FK_Flight_Route_id` FOREIGN KEY(Route_id) REFERENCES Route(route_id);
+
 
 
 --------------------------------------------------------
 
 
-CREATE TABLE AircraftSeat
-(
-    aircraft_id INT(5),
-    aircraft_seat_id INT(5)  NOT NULL,
-    travel_classid INT(3) NOT NULL
+CREATE TABLE AirplaneSeat
+(   airplaneseat_grp CHAR(10)
+    airplane_id CHAR(10),
+    class enum("FC","BC","EC"),
+    total_seats INT(3) UNSIGNED NOT NULL,
+    seat_price INT(5) UNSIGNED
 );
 
-ALTER TABLE AircraftSeat ADD CONSTRAINT `PK_AircraftSeat` PRIMARY KEY(aircraft_seat_id);
-ALTER TABLE AircraftSeat ADD CONSTRAINT `FK_AircraftSeat_Aircraft` FOREIGN KEY(aircraft_id) REFERENCES Aircraft(aircraft_id);
+ALTER TABLE AirplaneSeat ADD CONSTRAINT `PK_AirplaneSeatgrp` PRIMARY KEY(airplaneseat_grp);
+ALTER TABLE AirplaneSeat ADD CONSTRAINT `FK_AirplaneSeat_Airplane_id` FOREIGN KEY(airplane_id) REFERENCES Airplane(airplane_id);
+
+Alter TABLE aircraftseat DROP column travel_classid;
 ------------------------------------------------------------------------------------
 CREATE TABLE TravelClass
 (
@@ -176,14 +178,17 @@ ALTER TABLE FlightSeatPrice ADD CONSTRAINT `FK_FlightSeatPrice_AircraftSeat` FOR
 
 CREATE TABLE Booking
 (
-    booking_id INT(5),
+    booking_id INT(10),
+    flight_id INT(10) UNSIGNED,
+    airplaneseat_grp CHAR(10)
     passenger_id INT(5),
-    flight_seat_id INT(5)
+    total_fare INT(6) UNSIGNED DEFAULT 0
 );
 
 ALTER TABLE Booking ADD CONSTRAINT `PK_Booking` PRIMARY KEY(booking_id);    
-ALTER TABLE Booking ADD CONSTRAINT `FK_Booking_FlightSeatPrice` FOREIGN KEY(flight_seat_id) REFERENCES FlightseatPrice(flight_seat_id);
-ALTER TABLE Booking ADD CONSTRAINT `FK_Booking_Passenger` FOREIGN KEY(passenger_id) REFERENCES Passenger(passenger_id);
+ALTER TABLE Booking ADD CONSTRAINT `FK_Booking_Flight_id` FOREIGN KEY(flight_id) REFERENCES Flight(flight_id);
+ALTER TABLE Booking ADD CONSTRAINT `FK_Booking_AirplaneSeat_grp` FOREIGN KEY(airplaneseat_grp) REFERENCES AirplaneSeat(airplaneseat_grp);
+ALTER TABLE Booking ADD CONSTRAINT `FK_Booking_Passenger_id` FOREIGN KEY(passenger_id) REFERENCES Passenger(passenger_id);
 
 
 

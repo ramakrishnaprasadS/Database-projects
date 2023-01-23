@@ -2,23 +2,26 @@
 
 
 
-INSERT 
-INTO AIRPORT VALUES
-( 'DFW' , 'Dallas/Fort Worth International Airport','3200 E Airfield Dr','Dallas','Texas','USA',75261),
-( 'DAL' , 'Dallas Love Field Airport', '8008 CedarSprings Rd','Dallas','Texas','USA',75235),
-( 'RDU' , 'Raleigh-Durham International Airport','2400 John Brantley Blvd, Morrisville','Raleigh','NC','USA',27560),
-( 'CLT' , 'Charlotte Douglas International Airport','5501 R C Josh Birmingham Pkwy','Charlotte','NC','USA',28208),
-( 'LAX' , 'Los Angeles International Airport', '1 WorldWay','Los Angels','CA','USA',90045);
+--AIRPORT
 
 
 
 
-INSERT INTO AIRLINE_COMPANY VALUES
+INSERT INTO AIRLINES VALUES
 ( 'AA' , 'American Airlines'),
 ( 'BA' , 'British Airways'),
 ( 'EX' , 'Atlantic Airlines'),
 ( 'JET' , 'Jet Airways'),
-( 'SJ' , 'Spice Jet');
+( 'SJ' , 'Spice Jet'),
+('EA','Emirates Airline'),
+('QA','Qatar Airlines'),
+('SAA','Saudi Arabian Airlines'),
+('AAS','AirAsia'),
+('AC','Air China'),
+('KFA','Kingfisher Airlines'),
+('KRA','Korean Air'),
+('SA','Singapore Airlines');
+
 
 
 
