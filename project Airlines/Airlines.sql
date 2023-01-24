@@ -1,6 +1,8 @@
 -- Active: 1671708805339@@127.0.0.1@3308@ars
 
-use ars;
+create database airlines;
+
+use airlines;
 
 CREATE TABLE `countries` (
   `countryId` varchar(10) NOT NULL,
@@ -18,7 +20,7 @@ CREATE TABLE `address` (
   PRIMARY KEY (`addressId`),
   KEY `FK_country_address` (`countryId`),
   CONSTRAINT `FK_country_address` FOREIGN KEY (`countryId`) REFERENCES `countries` (`countryId`)
-) ENGINE=InnoDB AUTO_INCREMENT=500011 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=60001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `manufacturer` (
   `manId` int unsigned NOT NULL,
@@ -49,7 +51,7 @@ CREATE TABLE `baggage` (
   `weightKg` varchar(20) NOT NULL,
   `fare` decimal(10,2) unsigned NOT NULL,
   PRIMARY KEY (`baggageId`)
-) ENGINE=InnoDB AUTO_INCREMENT=201 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=906 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `customers` (
   `customerId` int unsigned NOT NULL AUTO_INCREMENT,
@@ -59,9 +61,27 @@ CREATE TABLE `customers` (
   `email` varchar(30) NOT NULL,
   `addressId` int unsigned NOT NULL,
   PRIMARY KEY (`customerId`),
-  UNIQUE KEY `phone` (`phone`),
   KEY `FK_address_customers` (`addressId`),
-  CONSTRAINT `FK_address_customers` FOREIGN KEY (`addressId`) REFERENCES `address` (`addressId`));
+  CONSTRAINT `FK_address_customers` FOREIGN KEY (`addressId`) REFERENCES `address` (`addressId`)
+) ENGINE=InnoDB AUTO_INCREMENT=70001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `seats` (
+  `seatId` varchar(10) NOT NULL,
+  `aircraftId` varchar(10) NOT NULL,
+  PRIMARY KEY (`seatId`,`aircraftId`),
+  KEY `FK_aircrafts_seats` (`aircraftId`),
+  CONSTRAINT `FK_aircrafts_seats` FOREIGN KEY (`aircraftId`) REFERENCES `aircrafts` (`aircraftId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `flightfare` (
+  `flightId` varchar(20) NOT NULL,
+  `seatId` varchar(10) NOT NULL,
+  `fare` decimal(12,2) unsigned NOT NULL,
+  `createDate` datetime DEFAULT CURRENT_TIMESTAMP,
+  `lastUpdated` datetime DEFAULT CURRENT_TIMESTAMP,
+  KEY `FK_seats_flightfare` (`seatId`),
+  CONSTRAINT `FK_seats_flightfare` FOREIGN KEY (`seatId`) REFERENCES `seats` (`seatId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `schedule` (
   `scheduleId` int NOT NULL,
@@ -83,6 +103,8 @@ CREATE TABLE `flights` (
   `lastUpdated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `departuretime` datetime DEFAULT NULL,
   `arrivaltime` datetime DEFAULT NULL,
+  `airline` varchar(40) NOT NULL,
+  `model` varchar(20) NOT NULL,
   PRIMARY KEY (`flightId`),
   KEY `FK_schedule_flights` (`scheduleId`),
   CONSTRAINT `FK_schedule_flights` FOREIGN KEY (`scheduleId`) REFERENCES `schedule` (`scheduleId`)
@@ -96,49 +118,19 @@ CREATE TABLE `bookings` (
   `bookingStatus` varchar(15) NOT NULL DEFAULT 'In Process',
   `bookedTime` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `lastUpdated` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `scheduleId` int NOT NULL,
   PRIMARY KEY (`bookingId`),
   KEY `FK_customers_bookings` (`customerId`),
   KEY `FK_flights_aircraft` (`flightId`),
-  CONSTRAINT `FK_customers_bookings` FOREIGN KEY (`customerId`) REFERENCES `customers` (`customerId`),
-  CONSTRAINT `FK_flights_aircraft` FOREIGN KEY (`flightId`) REFERENCES `flights` (`flightId`)
+  KEY `FK_flights_bookings` (`scheduleId`,`flightId`),
+  CONSTRAINT `FK_customers_bookings` FOREIGN KEY (`customerId`) REFERENCES `customers` (`customerId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=8720001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-
 
 CREATE TABLE `foodmenu` (
   `itemId` int unsigned NOT NULL,
   `name` varchar(10) NOT NULL,
   `itemPrice` int unsigned NOT NULL,
   PRIMARY KEY (`itemId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `pnr` (
-  `pnrId` char(6) NOT NULL,
-  `flightId` varchar(20) NOT NULL,
-  `bookingId` int unsigned NOT NULL,
-  PRIMARY KEY (`pnrId`),
-  KEY `FK_flights_pnr` (`flightId`),
-  KEY `FK_bookings_pnr` (`bookingId`),
-  CONSTRAINT `FK_bookings_pnr` FOREIGN KEY (`bookingId`) REFERENCES `bookings` (`bookingId`),
-  CONSTRAINT `FK_flights_pnr` FOREIGN KEY (`flightId`) REFERENCES `flights` (`flightId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `seats` (
-  `seatId` varchar(10) NOT NULL,
-  `aircraftId` varchar(10) NOT NULL,
-  PRIMARY KEY (`seatId`,`aircraftId`),
-  KEY `FK_aircrafts_seats` (`aircraftId`),
-  CONSTRAINT `FK_aircrafts_seats` FOREIGN KEY (`aircraftId`) REFERENCES `aircrafts` (`aircraftId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `flightfare` (
-  `flightId` varchar(20) NOT NULL,
-  `seatId` varchar(10) NOT NULL,
-  `fare` decimal(12,2) unsigned NOT NULL,
-  `createDate` datetime DEFAULT CURRENT_TIMESTAMP,
-  `lastUpdated` datetime DEFAULT CURRENT_TIMESTAMP,
-  KEY `FK_seats_flightfare` (`seatId`),
-  CONSTRAINT `FK_seats_flightfare` FOREIGN KEY (`seatId`) REFERENCES `seats` (`seatId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 CREATE TABLE `passengers` (
@@ -149,7 +141,6 @@ CREATE TABLE `passengers` (
   `email` varchar(45) NOT NULL,
   `passport` varchar(10) DEFAULT NULL,
   `addressId` int unsigned NOT NULL,
-  `pnr` char(6) NOT NULL,
   `seatId` varchar(10) NOT NULL,
   `bookingid` int unsigned NOT NULL,
   `flightId` varchar(20) NOT NULL,
@@ -158,8 +149,6 @@ CREATE TABLE `passengers` (
   `ItemId` int unsigned DEFAULT NULL,
   PRIMARY KEY (`passengerId`),
   KEY `FK_customers_passengers` (`customerId`),
-  KEY `FK_pnr_passengers` (`pnr`),
-  KEY `FK_seats_passengers` (`seatId`),
   KEY `FK_bookings_passengers` (`bookingid`),
   KEY `FK_baggage_passengers` (`baggageID`),
   KEY `FK_address_passengers` (`addressId`),
@@ -170,9 +159,6 @@ CREATE TABLE `passengers` (
   CONSTRAINT `FK_bookings_passengers` FOREIGN KEY (`bookingid`) REFERENCES `bookings` (`bookingId`),
   CONSTRAINT `FK_customers_passengers` FOREIGN KEY (`customerId`) REFERENCES `customers` (`customerId`),
   CONSTRAINT `FK_flights_passengers` FOREIGN KEY (`flightId`) REFERENCES `flights` (`flightId`),
-  CONSTRAINT `FK_foodmenu_passengers` FOREIGN KEY (`ItemId`) REFERENCES `foodmenu` (`itemId`),
-  CONSTRAINT `FK_pnr_passengers` FOREIGN KEY (`pnr`) REFERENCES `pnr` (`pnrId`),
-  CONSTRAINT `FK_seats_passengers` FOREIGN KEY (`seatId`) REFERENCES `seats` (`seatId`)
+  CONSTRAINT `FK_foodmenu_passengers` FOREIGN KEY (`ItemId`) REFERENCES `foodmenu` (`itemId`)
 ) ENGINE=InnoDB AUTO_INCREMENT=800001 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
 
