@@ -107,14 +107,6 @@ CREATE TABLE `flight_trip` (
 
 
 
-
-INSERT INTO FLIGHT_TRIP VALUES
-('kunish17dec',1,'RDU',"2023-01-30 6:00:00",'CLT',"2023-01-30 8:00:00",'kunal.jagdish@gmail.com' ), 
-('kuniaa741',1,'CLT',"2023-01-30 9:00:00",'DAL',"2023-01-30 12:00:00",'kunal.jagdish@gmail.com' ),
-('inder17dec',1,'RDU',"2023-01-30 13:00:00",'DFW',"2023-01-30 16:00:00",'indervirsingh@gmail.com' ) ,
-('shoaga17dec',1,'RDU',"2023-01-30 18:00:00",'DFW',"2023-01-30 20:00:00",'shobhit@gmail.com' ),
-('bala17dec',1,'DFW',"2023-01-30 22:00:00",'LAX',"2023-01-30 23:50:00",'bala@yahoo.com' );
-
 CREATE TABLE ROUTES(
 ROUTE_ID VARCHAR(15) ,
 DISTANCE DECIMAL(7,2) NOT NULL,
