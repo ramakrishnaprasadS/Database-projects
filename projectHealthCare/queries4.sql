@@ -79,6 +79,19 @@ case
 from cte;
 
 
+select pr.prescriptionid,sum(c.quantity) as total_qty ,
+    case when sum(c.quantity)<20 then "low quantity"
+        when sum(c.quantity) between 20 and 49 then "low quantity"
+        when sum(c.quantity)>=50 then "high quantity" 
+    end as Tag
+         
+    from 
+    Prescription pr inner join contain c using(prescriptionid)
+    inner join pharmacy ph using(pharmacyid)
+    where ph.pharmacyName="Ally Scripts"
+    group by pr.prescriptionid;
+
+
 
 /*
 Problem Statement 3: 
@@ -111,8 +124,23 @@ select medicineid,quantity,qty_status,discount_status from cte
 where (qty_status="LOW QUANTITY" and discount_status="HIGH") or (qty_status="HIGH QUANTITY" and discount_status="NONE");
 
 
-select k.medicineid ,k.quantity,k.discount
-from keep k inner join pharmacy ph using(pharmacyid) where ph.`pharmacyName`="Spot Rx" and k.quantity<1000 and k.discount>30;
+
+select k.medicineid ,k.quantity, 
+    case 
+        when k.quantity>7500 then "HIGH QUANTITY"
+        when k.quantity<1000 then "LOW QUANTITY"
+        else "OK"
+        end as qty_status,
+    case 
+        when k.discount>30 then "HIGH"
+        when k.discount=0 then "NONE"
+        else "NORMAL"
+        end as discount_status
+    from keep k inner join pharmacy ph using(pharmacyid) 
+    where ph.`pharmacyName`="Spot Rx"
+    and ( (k.quantity<1000 and k.discount>30) or (k.quantity>7500 and k.discount=0) );
+
+
 
 
 /*
@@ -172,7 +200,7 @@ case
     end as age_group
 from 
 patient pt inner join person p on pt.patientid = p.personid
-limit 20;
+;
 
 
 

@@ -11,6 +11,18 @@ Problem Statement 1:  Jimmy, from the healthcare department, has requested a rep
 The age category is as follows, Children (00-14 years), Youth (15-24 years), Adults (25-64 years), and Seniors (65 years and over).
 Assist Jimmy in generating the report. 
 */
+
+SELECT CASE WHEN TIMESTAMPDIFF(YEAR,pt.dob,NOW()) <15 THEN 'Children'
+            WHEN TIMESTAMPDIFF(YEAR,pt.dob,NOW())>=15 AND TIMESTAMPDIFF(YEAR,pt.dob,NOW())<=24 THEN 'Youth'
+            WHEN TIMESTAMPDIFF(YEAR,pt.dob,NOW())>=25 AND TIMESTAMPDIFF(YEAR,pt.dob,NOW())<=64 THEN 'Adults'
+            ELSE 'Seniors' END AS `age_Category`,
+COUNT(*) as `no_of_treatments` 
+FROM patient pt
+NATURAL JOIN treatment t
+WHERE YEAR(t.date)=2022
+GROUP BY `age_Category`;
+
+
 with patientCte AS (
     SELECT `patientID`,TIMESTAMPDIFF(YEAR,dob,NOW()) AS `age` FROM patient
 )
@@ -23,6 +35,7 @@ FROM patientCte p
 NATURAL JOIN treatment t
 WHERE YEAR(t.date)=2022
 GROUP BY `age_Category`;
+
 
 
 ---Problem statement2;
@@ -49,6 +62,16 @@ on person.personId=patient.patientId
 group by diseaseId order by diseaseId;
 
 
+select diseaseId,
+sum(if(gender="female",1,0) )as female,
+sum(if(gender="male",1,0)) as male
+from 
+treatment natural join patient 
+inner join person 
+on person.personId=patient.patientId 
+group by diseaseId order by diseaseId;
+
+
 ----problem statement3;
 /*
 Jacob, from insurance management, has noticed that insurance claims are not made for all the treatments. 
@@ -58,11 +81,13 @@ Assist Jacob in this situation by generating a report that finds for each gender
  And notice if there is a significant difference 
  between the treatment-to-claim ratio of male and female patients.
 */
---explain format=tree
+
 select gender,
 count(treatmentId),
 count(claimId),
 count(claimId)/count(treatmentId) as claim_to_treatment_ratio 
+--rank() over(order by count(claimid) desc ) as rnk
+
 from treatment left join claim using(claimid) 
 inner join person on person.personId=treatment.patientId 
 group by gender;
@@ -79,19 +104,31 @@ Note: discount field in keep signifies the percentage of discount on the maximum
 
 */
 
-select D.pharmacyid ,count(D.medicineid) as types_of_medicines,
+select D.pharmacyid ,count(D.medicineid) as variety_of_medicines,
 sum(D.quantity) as total_units,
-sum(D.totalval) as total_value_of_allItems
+sum(D.totalval) as total_value
 from
-(select 
-pharmacyid,
-keep.medicineid,
-quantity,
-maxprice,
-discount,
-(quantity*maxprice)*(1-0.01*discount) as totalval from keep natural join medicine) as D
+    (select 
+    pharmacyid,
+    keep.medicineid,
+    quantity,
+    maxprice,
+    discount,
+    (quantity*maxprice)*(1-0.01*discount) as totalval from pharmacy ph left join keep using(pharmacyid) natural join medicine) as D
 group by D.pharmacyid
-limit 20;
+order by total_value desc;
+;
+
+SELECT `pharmacyID`,COUNT(`medicineID`) as variety_of_medicines,ROUND(sum(`maxPrice`*quantity)) as val_without_dis, ROUND(SUM((`maxPrice`*quantity)*(1-0.01*discount))) as total_value
+FROM pharmacy
+NATURAL JOIN keep
+NATURAL JOIN medicine
+GROUP BY `pharmacyID`
+ORDER BY total_value desc;
+
+
+
+
 
 
 ---problem statement5;
@@ -106,12 +143,43 @@ avg(D.max_quantity) as avg_of_max_quantity,
 avg(D.min_quantity) as avg_of_min_quantity,
 avg(D.avg_quantity) as avg_of_avg_quantity
 from
- (select p.prescriptionid,p.pharmacyid,
- max(c.quantity) as max_quantity,
- min(c.quantity) as min_quantity,
- avg(c.quantity) as avg_quantity 
- from prescription p inner join contain c  on p.prescriptionid=c.prescriptionid 
- group by p.pharmacyid,p.prescriptionid 
- order by p.pharmacyid) as D
+    (select p.prescriptionid,p.pharmacyid,
+    max(c.quantity) as max_quantity,
+    min(c.quantity) as min_quantity,
+    avg(c.quantity) as avg_quantity 
+    from prescription p inner join contain c  on p.prescriptionid=c.prescriptionid 
+    group by p.pharmacyid,p.prescriptionid 
+    order by p.pharmacyid) as D
  group by D.pharmacyid
  order by avg_of_avg_quantity limit 10;
+
+
+ select distinct pharmacyname,
+--count(medicineid) as no_of_medicines,
+max(count(medicineid)) over(partition by pharmacyname  ) as max_no_of_med_per_prescription,
+min(count(medicineid)) over(partition by pharmacyname  ) as min_no_of_med_per_prescription,
+avg(count(medicineid)) over(partition by pharmacyname  ) as avg_no_of_med_per_prescription
+ from 
+ pharmacy ph inner join prescription p using(pharmacyid)
+ inner join contain c using(prescriptionid)
+ group by pharmacyname,prescriptionid
+ ;
+
+ 
+
+---------------------------------------------
+
+
+
+
+ select distinct pharmacyname,
+--count(medicineid) as no_of_medicines,
+max(sum(quantity)) over(partition by pharmacyname  ) as max_quantity_per_prescription,
+min(sum(quantity)) over(partition by pharmacyname  ) as min_quantity_per_prescription,
+avg(sum(quantity)) over(partition by pharmacyname  ) as avg_quantity_per_prescription
+ from 
+ pharmacy ph inner join prescription p using(pharmacyid)
+ inner join contain c using(prescriptionid)
+ group by pharmacyname,prescriptionid
+ order by avg_quantity_per_prescription desc
+;

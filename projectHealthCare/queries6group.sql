@@ -29,6 +29,21 @@ from cte
 order by HEX_medicine_percent desc;
 
 
+select ph.pharmacyname,
+    sum(c.quantity) as total_quantity_2022,
+    sum(if(m.hospitalExclusive="S",c.quantity,0)) as HEX_quantity_2022,
+    (sum(if(m.hospitalExclusive="S",c.quantity,0))*100)/sum(c.quantity) as HEX_medicine_percent
+    from 
+    pharmacy ph inner join prescription pr using(pharmacyid)
+    inner join treatment t using(treatmentid)
+    inner join contain c using(prescriptionid)
+    inner join medicine m using(medicineid)
+    where year(t.date)=2022
+    group by ph.pharmacyname
+    order by HEX_medicine_percent desc;
+
+
+
 /*
 Problem Statement 2:  
 Sarah, from the healthcare department, has noticed many people do not claim insurance for 
@@ -47,6 +62,8 @@ inner join treatment t on p.personid = t.patientid
 group by a.state;
 
 
+
+
 /*
 Problem Statement 3:  
 Sarah, from the healthcare department, is trying to understand if some diseases are spreading
@@ -54,6 +71,7 @@ Sarah, from the healthcare department, is trying to understand if some diseases 
   the number of the most and least treated diseases by the patients of that state 
   in the year 2022.
 */
+
 with cte as
     (select a.state,d.diseasename,count(t.treatmentid) as no_of_treatments
     
@@ -71,6 +89,9 @@ LAST_VALUE(diseasename) over(partition by state) as min_diseasename,
 LAST_VALUE(no_of_treatments) over(partition by state) as min_treatments
 from cte
 ;
+
+
+select count(distinct state) from address; 
 
 /*
 Problem Statement 4: 
@@ -109,3 +130,11 @@ select * from
 
 
 
+select * from
+        (select companyname,count(medicineid) as no_of_medicines,
+        dense_rank() over(order by count(medicineid) desc) as drnk 
+        from medicine 
+        where substancename like "ranitidina" or substancename like "ranitidina%"
+        group by companyname
+        order by no_of_medicines desc) D1
+ where drnk in (1,2,3);

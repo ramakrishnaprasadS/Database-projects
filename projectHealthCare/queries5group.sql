@@ -66,16 +66,19 @@ the top 3 cities that had the most number treatment for that disease.
 Generate a report for Kelly’s requirement
 */
 
-select diseasename,city,no_of_treatments from
-(select d.diseasename,a.city,count(t.patientid) as no_of_treatments,
-row_number() over(partition by d.diseasename order by count(t.patientid) desc) as rn
- from 
-address a left join person p using(addressid)
-inner join treatment t on t.patientid=p.personid
-right join disease d using(diseaseid)
-group by d.diseasename,a.city  
-order by d.diseasename,no_of_treatments desc) D
-where rn in (1,2,3);
+select diseasename,city,no_of_treatments,drn 
+from
+    (select d.diseasename,a.city,count(t.patientid) as no_of_treatments,
+    dense_rank() over(partition by d.diseasename order by count(t.patientid) desc) as drn
+    from 
+    address a left join person p using(addressid)
+    inner join treatment t on t.patientid=p.personid
+    right join disease d using(diseaseid)
+    group by d.diseasename,a.city  
+    order by d.diseasename,no_of_treatments desc) D
+where drn in (1,2,3);
+
+
 
 
 /*
@@ -96,6 +99,7 @@ from
 disease d inner join treatment t using(diseaseid)
 inner join prescription pr using(treatmentid)
 inner join pharmacy ph using(pharmacyid)
+where year(t.date) in (2021,2022)
 group by ph.pharmacyname,d.diseasename
 order by ph.pharmacyname,prescriptions_2021 desc;
 
@@ -111,7 +115,7 @@ if the patients of that region are claiming more insurance of that company.
 select companyname,state,no_of_claims as max_claims
 from
     (select ic.companyname,a.state,count(c.claimid) as no_of_claims,
-    row_number() over(partition by ic.companyname order by count(c.claimid) desc) as rn
+    dense_rank() over(partition by ic.companyname order by count(c.claimid) desc) as drn
     from 
     Insurancecompany ic inner join insuranceplan ip using(companyid)
     inner join claim c using(UIN) 
@@ -120,8 +124,11 @@ from
     inner join address a on a.addressid=p.addressid
     group by ic.companyname,a.state
     order by ic.companyname,no_of_claims desc) D 
-where rn=1
+where drn=1
 ;
+
+
+
 
 
 

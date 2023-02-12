@@ -30,16 +30,31 @@ Note: The state of Alabama is represented as AL in Address Table.
 
 */
 select city,diseaseid,treat_cnt from
-(select city,diseaseid,treat_cnt,max(treat_cnt) over( partition by city) as max_cnt 
-from
- (select a.city,t.diseaseid,count( t.treatmentid) as treat_cnt
- from treatment t inner join person p on t.patientid=p.personid  
- inner join address a on p.addressid=a.addressid 
-  where a.state="AL" 
-  group by a.city,t.diseaseid
-  order by a.city asc ) D  ) D2
+  (select city,diseaseid,treat_cnt,max(treat_cnt) over( partition by city) as max_cnt 
+  from
+    (select a.city,t.diseaseid,count( t.treatmentid) as treat_cnt
+    from treatment t inner join person p on t.patientid=p.personid  
+    inner join address a on p.addressid=a.addressid 
+      where a.state="AL" 
+      group by a.city,t.diseaseid
+      order by a.city asc ) D  ) D2
   where treat_cnt=max_cnt 
   order by max_cnt desc;
+
+
+select city,diseaseid,treat_cnt
+  from
+    (select a.city,t.diseaseid,count( t.treatmentid) as treat_cnt,
+    dense_rank() over(partition by a.city order by count( t.treatmentid) desc) as drnk
+    from treatment t inner join person p on t.patientid=p.personid  
+    inner join address a on p.addressid=a.addressid 
+      where a.state="AL" 
+      group by a.city,t.diseaseid
+      order by a.city asc ) D  
+where drnk=1
+order by treat_cnt desc;
+
+
 
 
 /*
@@ -51,11 +66,11 @@ Problem Statement 3:
 */
 
 select diseasename ,planname,no_of_claims from
-(select d.diseasename,i.planname,count(claimid) as no_of_claims ,
-max(count(claimid)) over(partition by d.`diseasename`) as max_claims,
-min(count(claimid)) over(partition by d.`diseasename`) as min_claims
-from disease d inner join treatment t using(diseaseid) inner join claim c using(claimid) inner join insuranceplan i using(UIN)
-group by d.diseasename,i.planname order by d.diseasename desc) D
+  (select d.diseasename,i.planname,count(claimid) as no_of_claims ,
+  max(count(claimid)) over(partition by d.`diseasename`) as max_claims,
+  min(count(claimid)) over(partition by d.`diseasename`) as min_claims
+  from disease d inner join treatment t using(diseaseid) inner join claim c using(claimid) inner join insuranceplan i using(UIN)
+  group by d.diseasename,i.planname order by d.diseasename desc) D
 where no_of_claims = max_claims or no_of_claims = min_claims order by diseasename asc,no_of_claims desc limit 100;
 
 

@@ -13,19 +13,15 @@ hospital-exclusive medicine that they can’t find elsewhere and facing problems
 
 
 
-with cte as
-(select ph.pharmacyid,count(m.medicineid) as no_of_HEX_medicines,sum(c.quantity) as total_qty from 
+select ph.pharmacyname,count(m.medicineid) as no_of_HEX_varieties_sold,sum(c.quantity) as total_qty_sold from 
 pharmacy ph inner join prescription pr using(pharmacyid)
 inner join treatment t on pr.treatmentid = t.treatmentid
 inner join contain c on  pr.prescriptionid = c.prescriptionID
 inner join medicine m on c.medicineid = m.medicineid
 where m.hospitalExclusive = "S" and (year(t.date) in (2021,2022))
-group by ph.pharmacyid
-)
-select phr.pharmacyname,cte.pharmacyID,cte.no_of_HEX_medicines,cte.total_qty
-from pharmacy phr inner join cte using(pharmacyid)
-order by cte.no_of_HEX_medicines desc
-limit 20;
+group by ph.pharmacyname
+order by total_qty_sold desc;
+
 
 
 /*
@@ -36,10 +32,9 @@ and the number of treatments the plan was claimed for.
 */
 
 --Q3--PS2
-select ic.companyname,ip.planname,count(t.claimid) as no_of_treatments_claimed from 
+select ic.companyname,ip.planname,count(c.claimid) as no_of_treatments_claimed from 
 insurancecompany ic inner join insuranceplan ip using(companyid)
 inner join claim c using(UIN)
-inner join treatment t using (claimid)
 group by ic.companyname,ip.planname
 order by ic.companyname,no_of_treatments_claimed desc;
 
@@ -71,6 +66,41 @@ where
 no_of_treatments_claimed=max_in_company or no_of_treatments_claimed=min_in_company;
 
 
+with cte as 
+(
+    select ic.companyname,ip.planname,count(t.claimid) as no_of_treatments_claimed ,
+    max(count(t.claimid)) over(partition by companyname ) max_in_company,
+    min(count(t.claimid)) over(partition by companyname ) min_in_company
+    from 
+    insurancecompany ic inner join insuranceplan ip using(companyid)
+    inner join claim c using(UIN)
+    inner join treatment t using (claimid)
+    group by ic.companyname,ip.planname
+    order by ic.companyname,no_of_treatments_claimed desc
+)
+select  companyname,
+case when no_of_treatments_claimed=max_in_company then planname end as max_claimed_plan,
+case when no_of_treatments_claimed=min_in_company then planname end as min_claimed_plan
+ from cte
+where 
+no_of_treatments_claimed=max_in_company or no_of_treatments_claimed=min_in_company
+order by companyname,no_of_treatments_claimed desc;
+
+
+with cte AS (SELECT `companyName`,`planName`, COUNT(`claimID`) 'claimCount'
+FROM insurancecompany
+INNER JOIN insuranceplan USING (`companyID`)
+LEFT JOIN claim USING(uin)
+GROUP BY `companyName`,`planName`
+ORDER BY `companyName`,claimCount DESC
+)
+SELECT DISTINCT`companyName`, 
+FIRST_VALUE(`planName`) OVER(PARTITION BY `companyName`) 'MaxClaim',
+LAST_VALUE(`planName`) OVER(PARTITION BY `companyName`) 'MinClaim'
+FROM cte
+ORDER BY `companyName`;
+
+
 /*
 Problem Statement 4:  
 The healthcare department wants a state-wise health report to assess which state requires more attention in the healthcare sector.
@@ -80,7 +110,8 @@ The healthcare department wants a state-wise health report to assess which state
 */
 
 select a.state,count(p.personid) as no_of_persons,
-count(pt.patientid) as no_of_patients
+count(pt.patientid) as no_of_patients,
+count(p.personid)/count(pt.patientid) as people_to_patient_ratio
 from person p inner join address a using(addressid) 
 left join patient pt on p.personid = pt.patientid 
 group by a.state
@@ -93,16 +124,17 @@ total quantity of medicine each pharmacy in his state has prescribed that falls
 under Tax criteria I for treatments that took place in 2021. Assist Jhonny 
 in generating the report. */
 
-select ph.pharmacyid,sum(c.quantity) as total_quantity
+select ph.pharmacyname,sum(c.quantity) as total_quantity
  from 
 address a inner join pharmacy ph using(addressid)
 inner join prescription pr using(pharmacyid)
+inner join treatment t using(treatmentid)
 left join contain c using(prescriptionid)
 inner join medicine m using(medicineid)
-where a.state="AZ" and m.taxcriteria="I"
-group by ph.pharmacyID
+where a.state="AZ" and m.taxcriteria="I" and year(t.date)=2021
+group by ph.pharmacyname
 order by total_quantity desc
-limit 10;
+;
 
 
 
