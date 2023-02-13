@@ -145,6 +145,32 @@ Assist Jackson to create this report.
 */
 
 
+select ph.pharmacyname,ifnull(d.diseasename,"total"),count(pr.prescriptionid)
+from 
+pharmacy ph inner join prescription pr using(pharmacyid)
+inner join treatment t using(treatmentid)
+inner join disease d using(diseaseid)
+where year(t.date)=2021
+group by ph.pharmacyname,d.diseasename with rollup
+;
+
+
+
+/*
+Problem Statement 5:  
+Praveen has requested for a report that finds for every disease how many males and females
+ underwent treatment for each in the year 2022. It would be helpful for Praveen 
+ if the aggregation for the different combinations is found as well.
+Assist Praveen to create this report. 
+*/
+
+select d.diseasename,ifnull(p.gender,"total"),count(t.treatmentid) as no_of_treatments  
+from 
+treatment t inner join disease d using(diseaseid)
+inner join person p on t.patientid= p.personid
+group by d.diseasename,p.gender with rollup;
+
+
 
 
 
