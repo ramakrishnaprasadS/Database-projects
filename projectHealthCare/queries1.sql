@@ -15,8 +15,8 @@ Assist Jimmy in generating the report.
 SELECT CASE WHEN TIMESTAMPDIFF(YEAR,pt.dob,NOW()) <15 THEN 'Children'
             WHEN TIMESTAMPDIFF(YEAR,pt.dob,NOW())>=15 AND TIMESTAMPDIFF(YEAR,pt.dob,NOW())<=24 THEN 'Youth'
             WHEN TIMESTAMPDIFF(YEAR,pt.dob,NOW())>=25 AND TIMESTAMPDIFF(YEAR,pt.dob,NOW())<=64 THEN 'Adults'
-            ELSE 'Seniors' END AS `age_Category`,
-COUNT(*) as `no_of_treatments` 
+            ELSE 'Seniors' END AS age_Category,
+COUNT(*) as no_of_treatments 
 FROM patient pt
 NATURAL JOIN treatment t
 WHERE YEAR(t.date)=2022
