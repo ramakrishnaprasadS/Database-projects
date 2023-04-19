@@ -91,6 +91,7 @@ from cte
 ;
 
 
+
 select count(distinct state) from address; 
 
 /*

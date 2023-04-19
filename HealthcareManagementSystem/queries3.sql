@@ -24,6 +24,7 @@ order by total_qty_sold desc;
 
 
 
+
 /*
 Problem Statement 2: 
 Insurance companies want to assess the performance of their insurance plans. 

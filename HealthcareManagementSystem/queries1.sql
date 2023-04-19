@@ -38,6 +38,7 @@ GROUP BY `age_Category`;
 
 
 
+
 ---Problem statement2;
 /*
 Jimmy, from the healthcare department, wants to know which disease is infecting people of which gender more often.
@@ -86,8 +87,6 @@ select gender,
 count(treatmentId),
 count(claimId),
 count(claimId)/count(treatmentId) as claim_to_treatment_ratio 
---rank() over(order by count(claimid) desc ) as rnk
-
 from treatment left join claim using(claimid) 
 inner join person on person.personId=treatment.patientId 
 group by gender;
